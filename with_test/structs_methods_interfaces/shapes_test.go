@@ -1,43 +1,9 @@
 package main
 
 import (
-	"math"
+	"fmt"
 	"testing"
 )
-
-type Rectangle struct {
-	Width  float64
-	Height float64
-}
-
-func (r Rectangle) Area() float64 {
-	return r.Width * r.Height
-}
-
-type Circle struct {
-	Radius float64
-}
-
-func (c Circle) Area() float64 {
-	return math.Pi * c.Radius * c.Radius
-}
-
-type Triangle struct {
-	Base   float64
-	Height float64
-}
-
-func (t Triangle) Area() float64 {
-	return (t.Base * t.Height) * 0.5
-}
-
-type Shape interface {
-	Area() float64
-}
-
-func Perimeter(rectangle Rectangle) float64 {
-	return 2 * (rectangle.Width + rectangle.Height)
-}
 
 func TestPerimeter(t *testing.T) {
 	rectangle := Rectangle{10.0, 10.0}
@@ -47,10 +13,6 @@ func TestPerimeter(t *testing.T) {
 	if got != want {
 		t.Errorf("got %.2f want %.2f", got, want)
 	}
-}
-
-func Area(rectangle Rectangle) float64 {
-	return rectangle.Width * rectangle.Height
 }
 
 func TestArea(t *testing.T) {
@@ -69,6 +31,7 @@ func TestArea(t *testing.T) {
 		// using tt.name from the case to use it as the `t.Run` test name
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.shape.Area()
+			fmt.Println("debug")
 			if got != tt.hasArea {
 				t.Errorf("%#v got %g want %g", tt.shape, got, tt.hasArea)
 			}
