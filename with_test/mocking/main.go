@@ -1,23 +1,75 @@
 package main
 
 import (
-	"bytes"
-	"testing"
+	"fmt"
+	"io"
+	"os"
+	"time"
 )
 
-func TestCountdown(t *testing.T) {
-	buffer := &bytes.Buffer{}
+const finalWord = "Go!"
+const countdownStart = 3
 
-	Countdown(buffer)
+type Sleeper interface {
+	Sleep()
+}
 
-	got := buffer.String()
-	want := "3"
+type SpySleeper struct {
+	Calls int
+}
 
-	if got != want {
-		t.Errorf("got %q want %q", got, want)
+func (s *SpySleeper) Sleep() {
+	s.Calls++
+}
+
+type DefaultSleeper struct{}
+
+func (d *DefaultSleeper) Sleep() {
+	time.Sleep(1 * time.Second)
+}
+
+type SpyCountdownOperations struct {
+	Calls []string
+}
+
+func (s *SpyCountdownOperations) Sleep() {
+	s.Calls = append(s.Calls, sleep)
+}
+
+func (s *SpyCountdownOperations) Write(p []byte) (n int, err error) {
+	s.Calls = append(s.Calls, write)
+	return
+}
+
+const write = "write"
+const sleep = "sleep"
+
+type ConfigrableSleeper struct {
+	duration time.Duration
+    sleep    func(time.Duration)
+}
+
+func (c *ConfigrableSleeper) Sleep() {
+    c.sleep(c.duration)
+}
+
+type SpyTime struct {
+    durationSlept time.Duration
+}
+
+func (s *SpyTime) Sleep(duration time.Duration) {
+    s.durationSlept = duration
+}
+
+func Countdown(out io.Writer, sleeper Sleeper) {
+	for i := countdownStart; i > 0; i-- {
+		fmt.Fprintln(out, i)
+		sleeper.Sleep()
 	}
+	fmt.Fprint(out, finalWord)
 }
 
 func main() {
-	Countdown()
+	sleeper := &ConfigrableSleeper{1 * time.Second, time.Sleep}
+	Countdown(os.Stdout, sleeper)
 }
